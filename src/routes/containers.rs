@@ -1,9 +1,9 @@
 use std::collections::{HashMap, hash_map::Entry};
 use serde::Serialize;
-use tide::StatusCode;
+use tide::{Response, StatusCode};
 use async_std::stream::StreamExt;
 
-use crate::{Request, utils::route_get};
+use crate::{Request, utils::{data_into_hashmap, route_get}};
 use crate::models::*;
 
 #[derive(Serialize)]
@@ -15,44 +15,125 @@ struct ThreadWID {
 
 #[derive(Serialize)]
 struct Thread {
-    last_pos: u32,
+    id: u32,
+    user_id: u32,
     name: String,
+    description: String
 }
 
 #[derive(Serialize)]
-struct Post {
-    post_id: u32,
-    user_id: u32,
-    content: String,
+pub struct BasicUser {
+    pub username: String,
+    pub is_avatar_set: bool
 }
 
 route_get!(
     home, req, {
         let mut s = sqlx::query!(
-            "SELECT category_id c_id, c.name c_name, c.description c_descr,
-            f.forum_id f_id, f.name f_name, f.description f_descr
+            "SELECT category_id p_id, c.name p_name, c.description p_descr,
+            f.forum_id c_id, f.name c_name, f.description c_descr
             FROM categories c INNER JOIN forums f USING (category_id)").fetch(&req.state().db);
 
-        let mut data: HashMap::<u32, ContainerData<0>> = HashMap::new();
-        while let Some(Ok(r)) = s.next().await {
-            match data.entry(r.c_id) {
-                Entry::Occupied(mut e) => {
-                    e.get_mut().children.push(Container {
-                        id: r.f_id, name: r.f_name, description: r.f_descr
-                    });
-                },
-                Entry::Vacant(e) => {
-                    e.insert(ContainerData {
-                        parents: [],
-                        container: BasicContainer {name: r.c_name, description: r.c_descr},
-                        children: vec!(Container {
-                            id: r.f_id, name: r.f_name, description: r.f_descr
-                        })
-                    });
-                }
+        data_into_hashmap!(s)
+    }
+);
+
+#[derive(Serialize)]
+struct PostWPos {
+    post_id: u32,
+    user_id: u32,
+    content: String,
+    post_pos: u32
+}
+
+#[derive(Serialize)]
+struct LatestData {
+    threads: Vec<ContainerData<Container, PostWPos>>,
+    users: HashMap<u32, BasicUser>
+}
+
+pub async fn latest_posts(req: Request) -> tide::Result {
+    tide::log::debug!("latest_posts_called");
+    let mut s = sqlx::query!(
+        "WITH ts AS (
+            SELECT t.thread_id, name, last_pos, lp.time FROM threads t
+            INNER JOIN posts lp ON (t.thread_id = lp.thread_id AND t.last_pos = lp.post_pos)
+            ORDER BY lp.time DESC LIMIT 10
+        ) SELECT thread_id, name, pf.content description, p.post_id, p.user_id, p.content, p.post_pos,
+        username, profile_tag, is_avatar_set AS `is_avatar_set: bool`, is_admin AS `is_admin: bool`
+        FROM ts INNER JOIN posts p USING (thread_id) INNER JOIN posts pf USING (thread_id)
+        INNER JOIN users u ON (p.user_id = u.user_id)
+        WHERE pf.post_pos = 1 AND p.post_pos >= IF(last_pos <= 5, 0, last_pos - 5)
+        ORDER BY ts.time, p.post_pos"
+    ).fetch(&req.state().db);
+
+    let mut threads = vec!();
+    let mut users = HashMap::new();
+    let mut thread;
+
+    macro_rules! make_thread {
+        ($r:expr) => {
+            ContainerData {
+                container: Container { id: $r.thread_id, name: $r.name, description: $r.description },
+                children: vec!(PostWPos {
+                    post_id: $r.post_id, user_id: $r.user_id,
+                    content: $r.content, post_pos: $r.post_pos
+                })
             }
+        };
+    }
+    let next = s.next().await;
+    if let Some(Ok(r)) = next {
+        thread = make_thread!(r);
+        users.insert(r.user_id, BasicUser {
+            username: r.username,
+            is_avatar_set: r.is_avatar_set
+        });
+    } else {
+        return if let Some(Err(e)) = next {
+            Err(tide::Error::new(StatusCode::InternalServerError, e))
+        } else {
+            Ok(Response::new(StatusCode::InternalServerError))
         }
-        data
+    }
+
+    while let Some(Ok(r)) = s.next().await {
+        if r.thread_id == thread.container.id {
+            thread.children.push(PostWPos {
+                post_id: r.post_id, user_id: r.user_id,
+                content: r.content, post_pos: r.post_pos
+            });
+        } else {
+            threads.push(thread);
+            thread = make_thread!(r);
+        }
+        if let Entry::Vacant(e) = users.entry(r.user_id) {
+            e.insert(BasicUser {
+                username: r.username,
+                is_avatar_set: r.is_avatar_set
+            });
+        }
+    }
+    threads.push(thread);
+    Ok(serde_json::to_value(LatestData { threads, users })?.into())
+}
+
+
+route_get!(
+    all_categories, req,  {
+        sqlx::query_as!(
+            IDContainer,
+            "SELECT category_id id, name FROM categories ORDER BY category_id"
+        ).fetch_all(&req.state().db).await?
+    }
+);
+
+route_get!(
+    all_forums, req,  {
+        sqlx::query_as!(
+            IDContainer,
+            "SELECT forum_id id, name FROM forums ORDER BY category_id, forum_id"
+        ).fetch_all(&req.state().db).await?
     }
 );
 
@@ -68,7 +149,7 @@ pub async fn forum_data(req: Request) -> tide::Result {
             "SELECT topic_id AS id, name, description FROM topics WHERE forum_id = ?",
             forum_id
         ).fetch_all(&req.state().db).await?;
-        return Ok(serde_json::to_value(ContainerData {
+        return Ok(serde_json::to_value(ContainerDataParents {
             parents: [IDContainer { id: r.c_id, name: r.c_name }],
             container: BasicContainer { name: r.f_name, description: r.f_description },
             children: vec
@@ -77,7 +158,14 @@ pub async fn forum_data(req: Request) -> tide::Result {
     return Ok(StatusCode::NotFound.into());
 }
 
-const PAGE_SIZE: u16 = 10;
+route_get!(
+    all_topics, req,  {
+        sqlx::query_as!(
+            IDContainer,
+            "SELECT topic_id id, name FROM topics ORDER BY forum_id, topic_id"
+        ).fetch_all(&req.state().db).await?
+    }
+);
 
 #[derive(Serialize)]
 struct TopicInfo {
@@ -107,11 +195,20 @@ pub async fn topic_info(req: Request) -> tide::Result {
     Ok(StatusCode::NotFound.into())
 }
 
+pub const PAGE_SIZE: u16 = 10;
+
+#[derive(Serialize)]
+struct TopicData {
+    children: Vec<Thread>,
+    users: HashMap<u32, BasicUser>
+}
+
 pub async fn topic_pages(req: Request) -> tide::Result {
     let topic_id = req.param("topic_id")?.parse::<u32>()?;
-    let vec = sqlx::query_as!(
-        IDContainer,
-        "SELECT t.thread_id AS id, name FROM threads AS t WHERE topic_id = ? ORDER BY time LIMIT ? OFFSET ?",
+    let vec = sqlx::query!(
+        "SELECT t.thread_id AS id, name, user_id, username, content, is_avatar_set AS `is_avatar_set: bool`
+         FROM threads AS t INNER JOIN posts USING (thread_id) INNER JOIN users USING (user_id)
+         WHERE topic_id = ? AND post_pos = 1 ORDER BY t.time LIMIT ? OFFSET ?",
         topic_id, PAGE_SIZE, PAGE_SIZE * (req.param("page_num")?.parse::<u16>()? - 1)
     ).fetch_all(&req.state().db).await?;
 
@@ -119,15 +216,39 @@ pub async fn topic_pages(req: Request) -> tide::Result {
         "SELECT 1 AS ex FROM topics WHERE topic_id = ?",
         topic_id
     ).fetch_optional(&req.state().db).await?.is_some() {
-        return Ok(serde_json::to_value(vec)?.into());
+        let mut children = vec![];
+        let mut users = HashMap::new();
+        for r in vec {
+            children.push(Thread {
+                id: r.id, name: r.name, user_id: r.user_id, description: r.content
+            });
+            if let Entry::Vacant(e) = users.entry(r.user_id) {
+                e.insert(BasicUser {
+                    username: r.username,
+                    is_avatar_set: r.is_avatar_set
+                });
+            }
+        }
+        return Ok(serde_json::to_value(
+            TopicData {
+                children,
+                users
+            }
+        )?.into())
     }
     Ok(StatusCode::NotFound.into())
 }
 
 #[derive(Serialize)]
+struct ThreadI {
+    last_pos: u32,
+    name: String
+}
+
+#[derive(Serialize)]
 struct ThreadInfo {
     parents: [IDContainer; 3],
-    container: Thread
+    container: ThreadI
 }
 
 pub async fn thread_info(req: Request) -> tide::Result {
@@ -149,7 +270,7 @@ pub async fn thread_info(req: Request) -> tide::Result {
                 IDContainer { id: r.f_id, name: r.f_name },
                 IDContainer { id: r.t_id, name: r.t_name }
             ],
-            container: Thread {
+            container: ThreadI {
                 last_pos: r.last_pos,
                 name: r.th_name,
             }
@@ -158,19 +279,105 @@ pub async fn thread_info(req: Request) -> tide::Result {
     Ok(StatusCode::NotFound.into())
 }
 
+
+#[derive(Serialize)]
+pub struct Post {
+    pub post_id: u32,
+    pub user_id: u32,
+    pub content: String,
+    reactions: HashMap<String, u32>
+}
+
+#[derive(Serialize)]
+struct PostUser {
+    user_id: u32,
+    username: String,
+    profile_tag: String,
+    is_admin: bool,
+    is_avatar_set: bool
+}
+
+#[derive(Serialize)]
+struct ThreadData {
+    posts: Vec<Post>,
+    users: HashMap<u32, PostUser>
+}
+
 pub async fn thread_pages(req: Request) -> tide::Result {
     let thread_id = req.param("thread_id")?.parse::<u32>()?;
-    let vec = sqlx::query_as!(
-        Post,
-        "SELECT post_id, user_id, content FROM posts WHERE thread_id = ? ORDER BY post_pos LIMIT ? OFFSET ?",
+    let vec = sqlx::query!("
+        WITH p AS (
+            SELECT post_id, user_id, content, username, profile_tag, is_avatar_set, is_admin
+            FROM posts INNER JOIN users USING (user_id)
+            WHERE thread_id = ? ORDER BY post_pos LIMIT ? OFFSET ?
+        )
+        SELECT post_id, user_id, content, username, profile_tag, reaction, r_count,
+        is_avatar_set `is_avatar_set: bool`, is_admin `is_admin: bool`
+        FROM p LEFT JOIN
+        (SELECT post_id, reaction, COUNT(*) r_count FROM added_reactions r GROUP BY post_id, reaction) r USING (post_id)",
         thread_id, PAGE_SIZE, PAGE_SIZE * (req.param("page_num")?.parse::<u16>()? - 1)
     ).fetch_all(&req.state().db).await?;
 
-    if vec.len() != 0 || sqlx::query!(
+    if vec.len() != 0 {
+        let mut posts = vec![];
+        let mut users = HashMap::new();
+        let mut it = vec.into_iter();
+        let r = it.next().unwrap(); // len != 0 already checked
+        let mut current = Post {
+            post_id: r.post_id,
+            user_id: r.user_id,
+            content: r.content,
+            reactions: HashMap::new()
+        };
+        users.insert(r.user_id, PostUser {
+            user_id: r.user_id,
+            username: r.username,
+            profile_tag: r.profile_tag,
+            is_avatar_set: r.is_avatar_set,
+            is_admin: r.is_admin
+        });
+
+        for r in it {
+            if current.post_id == r.post_id {
+                if let Some(react) = r.reaction {
+                    match current.reactions.entry(react) {
+                        Entry::Vacant(e) => { e.insert(1); },
+                        Entry::Occupied(mut e) => { *e.get_mut() += 1; },
+                    }
+                }
+            } else {
+                posts.push(current);
+                current = Post {
+                    post_id: r.post_id,
+                    user_id: r.user_id,
+                    content: r.content,
+                    reactions: HashMap::new()
+                };
+                if let Some(react) = r.reaction {
+                    current.reactions.insert(react, 1);
+                }
+            }
+            if let Entry::Vacant(e) = users.entry(r.user_id) {
+                e.insert(PostUser {
+                    user_id: r.user_id,
+                    username: r.username,
+                    profile_tag: r.profile_tag,
+                    is_avatar_set: r.is_avatar_set,
+                    is_admin: r.is_admin
+                });
+            }
+        }
+        posts.push(current);
+        return Ok(serde_json::to_value(ThreadData {
+            posts,
+            users
+        })?.into());
+    }
+    if sqlx::query!(
         "SELECT 1 AS ex FROM threads WHERE thread_id = ?",
         thread_id
     ).fetch_optional(&req.state().db).await?.is_some() {
-        return Ok(serde_json::to_value(vec)?.into());
+        return Ok(serde_json::to_value(ThreadData { posts: vec![], users: HashMap::new() })?.into())
     }
     Ok(StatusCode::NotFound.into())
 }

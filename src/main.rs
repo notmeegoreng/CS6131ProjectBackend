@@ -24,7 +24,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     async_std::task::block_on(async {
         let pool = MySqlPoolOptions::new()
             .max_connections(5)
-            .connect("mysql://root:admin@localhost/forum_site").await?;
+            .connect(&std::env::var("DATABASE_URL")?).await?;
+        log::debug!("Database connected");
         let mut app = tide::with_state(State { db: pool.clone() });
         routes::add_routes(
             &mut app
@@ -32,13 +33,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .with(log::LogMiddleware::new())
                 .with(tide::security::CorsMiddleware::new()
                     .allow_credentials(true)
-                    .allow_headers("Content-Type".parse::<HeaderValue>()?)
-                    .allow_origin("http://localhost:1212")
-                    .expose_headers("Content-Encoding".parse::<HeaderValue>()?)),
+                    .allow_headers("Content-Type".parse::<HeaderValue>().unwrap())
+                    .allow_methods("DELETE, GET, PATCH, POST, OPTIONS".parse::<HeaderValue>().unwrap())
+                    .expose_headers("Content-Encoding".parse::<HeaderValue>().unwrap())
+                    .allow_origin("http://localhost:1212")),
             r#".\images\"#
         );
-
-        app.listen("127.0.0.1:1414").await?;
+        log::debug!("listening starting");
+        app.listen("0.0.0.0:1414").await?;
         pool.close().await;
         Ok(())
     })

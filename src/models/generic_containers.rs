@@ -1,4 +1,4 @@
-use serde::{Serialize, Serializer, ser::SerializeStruct};
+use serde::{Serialize, Serializer, ser::SerializeStruct, Deserialize};
 
 #[derive(Serialize)]
 pub struct IDContainer {
@@ -6,7 +6,7 @@ pub struct IDContainer {
     pub name: String
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BasicContainer {
     pub name: String,
     pub description: String
@@ -19,15 +19,21 @@ pub struct Container {
     pub description: String
 }
 
-pub struct ContainerData<const N: usize, C: serde::Serialize = Container> {
+pub struct ContainerDataParents<const N: usize, C: serde::Serialize = Container> {
     pub parents: [IDContainer; N],
     pub container: BasicContainer,
     pub children: Vec<C>
 }
 
+#[derive(Serialize)]
+pub struct ContainerData<Co: serde::Serialize = BasicContainer, C: serde::Serialize = Container> {
+    pub container: Co,
+    pub children: Vec<C>
+}
+
 macro_rules! impl_serial_for_data {
     ($n:literal) => {
-        impl <C: Serialize> Serialize for ContainerData<$n, C> {
+        impl <C: Serialize> Serialize for ContainerDataParents<$n, C> {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer, {
                 let mut state = Serializer::serialize_struct(serializer, "Data", 3)?;
                 state.serialize_field("parents", &self.parents)?;

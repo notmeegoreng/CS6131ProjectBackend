@@ -5,8 +5,7 @@ pub(crate) mod sessions;
 use std::fmt::{Debug, Display, Formatter};
 pub(crate) use macros::wrapper;
 // pub(crate) use macros::wrapper_mut;
-pub(crate) use macros::route_get;
-
+pub(crate) use macros::{route_get, route_search, data_into_hashmap, SearchQuery};
 // pub(crate) use macros::route_post;
 pub(crate) use macros::wrap_error;
 

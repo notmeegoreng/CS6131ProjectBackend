@@ -1,26 +1,8 @@
 use tide::{Response, StatusCode};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize};
 use serde_json;
 
-use crate::{Request, utils::route_get};
-
-#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize, sqlx::FromRow)]
-pub struct User {
-    pub user_id: u32,
-    pub username: String,
-    pub description: String,
-    pub profile_tag: String,
-    // password hash is not stored on the main struct as it should only be used on login
-    pub is_avatar_set: bool,
-    pub is_admin: bool
-}
-
-#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize, sqlx::FromRow)]
-pub struct Log {
-    pub log_id: u32,
-    pub log: String,
-    pub time: chrono::NaiveDateTime
-}
+use crate::{Request, utils::route_get, models::{User, Log}};
 
 #[derive(Deserialize)]
 struct UsernameQuery {
@@ -47,9 +29,30 @@ pub async fn get(req: Request) -> tide::Result {
 }*/
 route_get!(
     user_get, req, User,
-    "SELECT user_id, username, description, profile_tag, is_avatar_set AS `is_avatar_set: _`, is_admin AS `is_admin: _` FROM users WHERE user_id = ?",
+    "SELECT user_id, username, description, profile_tag,
+     is_avatar_set AS `is_avatar_set: _`, is_admin AS `is_admin: _`
+     FROM users WHERE user_id = ?",
     req.param("user_id")?.parse::<u32>()?
 );
+
+#[derive(Deserialize)]
+struct UserPatch {
+    profile_tag: Option<String>,
+    description: Option<String>
+}
+
+pub async fn user_patch(mut req: Request) -> tide::Result {
+    let data: UserPatch = req.body_json().await?;
+    if let Some(user_id) = req.session().get::<u32>("user_id") {
+        sqlx::query!(
+            "UPDATE users SET profile_tag = COALESCE(?, profile_tag),
+             description = COALESCE(?, description) WHERE user_id = ?",
+            data.profile_tag, data.description, user_id
+        ).execute(&req.state().db).await?;
+        return Ok(Response::new(StatusCode::NoContent));
+    }
+    Ok(Response::new(StatusCode::Unauthorized))
+}
 
 pub async fn log_get(req: Request) -> tide::Result {
     let user_id = req.param("user_id")?.parse::<u32>()?;

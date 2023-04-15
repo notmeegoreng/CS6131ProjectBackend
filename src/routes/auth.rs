@@ -1,35 +1,31 @@
-use async_session::Session;
-use tide::StatusCode;
+use tide::{Response, StatusCode};
 use serde::{Serialize, Deserialize};
-use tide::Response;
 
-use crate::{Request, utils::{wrap_error, auth}};
-use crate::utils::sessions::SessionWorkaroundExt;
+use crate::{Request, utils::{wrap_error, auth, sessions::SessionWorkaroundExt}};
 
 const PRE_AUTH_KEY: &str = "pre_auth";
 
-#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct Login {
     username: String,
     password: String
 }
 
+#[derive(Serialize)]
+struct LoginResult {
+    user_id: u32,
+    is_admin: bool
+}
+
 pub async fn pre_auth(mut req: Request) -> tide::Result {
     let sess = req.session_mut();
     sess.insert_raw(PRE_AUTH_KEY, "_".to_string());
-    Ok("".into())
-}
-
-pub fn check_pre_auth(sess: &mut Session) -> Option<Response> {
-    if let Some(_) = sess.get_raw(PRE_AUTH_KEY) {
-        return None;
-    }
-    Some(Response::builder(StatusCode::Unauthorized).body("pre auth required").build())
+    Ok(Response::new(StatusCode::Ok))
 }
 
 pub async fn register(mut req: Request) -> tide::Result {
-    if let Some(resp) = check_pre_auth(req.session_mut()) {
-        return Ok(resp)
+    if req.session().get_raw(PRE_AUTH_KEY).is_none() {
+        return Ok(Response::builder(StatusCode::Unauthorized).body("pre auth required").build())
     }
 
     let reg_data: Login = req.body_json().await?;
@@ -49,17 +45,19 @@ pub async fn register(mut req: Request) -> tide::Result {
 }
 
 pub async fn login<'a>(mut req: Request) -> tide::Result {
-    if let Some(resp) = check_pre_auth(req.session_mut()) {
-        return Ok(resp)
+    if req.session().get_raw(PRE_AUTH_KEY).is_none() {
+        return Ok(Response::builder(StatusCode::Unauthorized).body("pre auth required").build())
     }
 
     let login_data: Login = req.body_json().await?;
     let data = match sqlx::query!(
-        "SELECT user_id, credentials AS `creds: Vec<u8>`, salt as `salt: Vec<u8>` FROM users WHERE username = ?",
+        "SELECT user_id, credentials `creds: Vec<u8>`,
+         salt `salt: Vec<u8>`, is_admin `is_admin: bool`
+         FROM users WHERE username = ?",
         &login_data.username
     ).fetch_optional(&req.state().db).await? {
-        None => return Ok(Response::builder(StatusCode::Forbidden).body("username not found").build()),
-        Some(d) => d
+        Some(d) => d,
+        None => return Ok(Response::builder(StatusCode::Forbidden).body("username not found").build())
     };
 
     match auth::verify(
@@ -75,7 +73,9 @@ pub async fn login<'a>(mut req: Request) -> tide::Result {
     sess.mark_for_regenerate();
     sess.insert("user_id", data.user_id)?;
     sess.remove(PRE_AUTH_KEY);
-    Ok(data.user_id.to_string().into())
+    Ok(serde_json::to_value(LoginResult {
+        user_id: data.user_id, is_admin: data.is_admin
+    })?.into())
 }
 
 pub async fn logout(mut req: Request) -> tide::Result {

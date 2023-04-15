@@ -1,0 +1,1507 @@
+{
+  "db": "MySQL",
+  "00b7ba2b09002fdfc5d64f38a16d2859f95bfa1ae90d3f6edbdb51fab92bd1b5": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 252,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT forum_id AS id, name, description FROM forums WHERE name LIKE ('%' + ? + '%')"
+  },
+  "0ff3824f6d006a4f06576e8c1d46f0ef0f82e498e3a4f4bd65724fbd6ea6373a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "INSERT INTO posts(thread_id, user_id, content) VALUES (?, ?, ?)"
+  },
+  "106ef9804b1b7a375c39cb75f9a54d9ae247415eab8d77ba364261db12bc2b5c": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "TRUNCATE sessions"
+  },
+  "21b987053da33daded13182e8e7b2bfee881e3a1d8f4db82e2cfc88310ad0f7c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 252,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT forum_id AS id, name, description FROM forums"
+  },
+  "22faf8d839fa13eba4f14d70e071773941d7e01d1a2f20f2e1f645c7de95aecb": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "INSERT INTO topics(forum_id, name, description) VALUES(?, ?, ?)"
+  },
+  "234eab0efb6ca602322b947563c51ec31cd815d29a6ccdd6daee007e3c9b8c0d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 252,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT topic_id AS id, name, description FROM topics"
+  },
+  "3681df2e99cac8457dbeb546693a88bd1a80703508fea6e4f49e02c5fc0be763": {
+    "describe": {
+      "columns": [
+        {
+          "name": "ex",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 129
+            },
+            "max_size": 2,
+            "type": "LongLong"
+          }
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT 1 AS ex FROM threads WHERE thread_id = ?"
+  },
+  "3fe861afd0a30cf1cebce9addd09e92c7117caf4e2f3e618e5e46b269a213cd2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "ex",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 129
+            },
+            "max_size": 2,
+            "type": "LongLong"
+          }
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT 1 AS ex FROM topics WHERE topic_id = ?"
+  },
+  "48d3bd2b490aa15633ef6d339509e083cff35d38b0094986c04f116efd42a9e4": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4101
+            },
+            "max_size": 128,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 4096,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "profile_tag",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 256,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "is_avatar_set: _",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 1,
+            "type": "Tiny"
+          }
+        },
+        {
+          "name": "is_admin: _",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 1,
+            "type": "Tiny"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT user_id, username, description, profile_tag, is_avatar_set AS `is_avatar_set: _`, is_admin AS `is_admin: _` FROM users WHERE user_id = ?"
+  },
+  "4bd2b213b9a25ebe3fb8e543fdb86d7f5f96a73f25932f86f772c795806e9648": {
+    "describe": {
+      "columns": [
+        {
+          "name": "post_id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4137
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "content",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4113
+            },
+            "max_size": 262140,
+            "type": "Blob"
+          }
+        },
+        {
+          "name": "username",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4101
+            },
+            "max_size": 128,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "profile_tag",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 256,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "is_avatar_set: bool",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 1,
+            "type": "Tiny"
+          }
+        },
+        {
+          "name": "is_admin: bool",
+          "ordinal": 6,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 1,
+            "type": "Tiny"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "SELECT post_id, user_id, content, username, profile_tag,\n         is_avatar_set AS `is_avatar_set: bool`, is_admin AS `is_admin: bool`\n         FROM posts INNER JOIN users USING (user_id)\n         WHERE thread_id = ? ORDER BY post_pos LIMIT ? OFFSET ?"
+  },
+  "58169acb4809b6e2de5e1dea9a109d99065315a45d2156bfbe48dfc892b31dc1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "c_id!",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4136
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "c_name!",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4096
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "f_id!",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4136
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "f_name!",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4096
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "t_id",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4137
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "t_name!",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4096
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "th_name",
+          "ordinal": 6,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "last_pos: u32",
+          "ordinal": 7,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 129
+            },
+            "max_size": 10,
+            "type": "LongLong"
+          }
+        }
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT category_id AS `c_id!`, c.name AS `c_name!`,\n         forum_id AS `f_id!`, f.name AS `f_name!`,\n         topic_id AS t_id, t.name AS `t_name!`,\n         th.name AS th_name, COALESCE(th.last_pos, 0) AS `last_pos: u32`\n         FROM threads AS th\n         LEFT JOIN topics AS t USING (topic_id)\n         LEFT JOIN forums AS f USING (forum_id)\n         LEFT JOIN categories AS c USING (category_id)\n         WHERE thread_id = ?"
+  },
+  "582ec05d50f27d9a4ae94f01701390cc76fd3b06083f562b51986132eb408063": {
+    "describe": {
+      "columns": [
+        {
+          "name": "c_id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "c_name",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "c_descr",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 252,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "f_id",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "f_name",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "f_descr",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 252,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT category_id c_id, c.name c_name, c.description c_descr,\n            f.forum_id f_id, f.name f_name, f.description f_descr\n            FROM categories c INNER JOIN forums f USING (category_id)"
+  },
+  "5d9866a11f03136889a3ffb191207d716fe724b402e316ceccaf273a361bdb66": {
+    "describe": {
+      "columns": [
+        {
+          "name": "available",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 129
+            },
+            "max_size": 2,
+            "type": "LongLong"
+          }
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT 1 AS available FROM users WHERE username = ?"
+  },
+  "62d12b773484c0b5f8d750876f95f1077bb50b8e09e5bcdc8b120a74f14c514a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4101
+            },
+            "max_size": 128,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "profile_tag",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 256,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 4096,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "is_avatar_set: _",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 1,
+            "type": "Tiny"
+          }
+        },
+        {
+          "name": "is_admin: _",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 1,
+            "type": "Tiny"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT user_id, username, profile_tag, description,\n             is_avatar_set AS `is_avatar_set: _`, is_admin AS `is_admin: _`\n             FROM users WHERE username LIKE ('%' + ? + '%')"
+  },
+  "6317f95fe21c7d8ef572e50fe0621b453323ff03137f65a24b7c882718fc6134": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 252,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT topic_id AS id, name, description FROM topics WHERE name LIKE ('%' + ? + '%')"
+  },
+  "69d92e889ed8a5e4094961e7861b15f4c50a0d9a74b862c262d6a3887487afb2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "log_id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "log",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4113
+            },
+            "max_size": 262140,
+            "type": "Blob"
+          }
+        },
+        {
+          "name": "time",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 129
+            },
+            "max_size": 19,
+            "type": "Datetime"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT log_id, log, time FROM audit_log WHERE user_id = ?"
+  },
+  "879d4e161d1c45ead2c2f1bd32bc3f4871331de4753eb5b5b98919e97f5f4c54": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "INSERT INTO forums(category_id, name, description) VALUES(?, ?, ?)"
+  },
+  "8a314f5a30dcea22a0d2364fd9a289e62b7f735a451fb04508b8d1cbefb32bab": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 252,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT category_id AS id, name, description FROM categories"
+  },
+  "8eac7a452542dfb1a352775b659208ff26a293dc7378950a6feef8ebc4c1835d": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM sessions WHERE sess_id = ?"
+  },
+  "90d2d1c9b6edf6b65b304da7aec42a7874e2b5c39a4fb22d0f3da00bababc763": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT INTO categories(name, description) VALUES(?, ?)"
+  },
+  "96a825cd2d9dc0e2bf6f3c2f6507c3faba9c9454afbc14f2ea18815253e6e120": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "INSERT INTO posts(user_id, thread_id, content) VALUES(?, ?, ?)"
+  },
+  "973610ee5aae41af056d02f7abf4539e1b1847b9508b267a8e023733dfc44af2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "c_id!",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4136
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "c_name!",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4096
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "f_id",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4137
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "f_name!",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4096
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "t_name",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 252,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT category_id AS `c_id!`, c.name AS `c_name!`, forum_id AS f_id, f.name AS `f_name!`,\n         t.name AS t_name, t.description\n         FROM topics AS t\n         LEFT JOIN forums AS f USING (forum_id)\n         LEFT JOIN categories AS c USING (category_id)\n         WHERE topic_id = ?"
+  },
+  "97ea6b211109ccbbd0114810cb881d347dbd077da4b80ae702f5d5f54958453d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "c_id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4137
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "c_name!",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4096
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "f_name",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "f_description",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 252,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT category_id AS c_id, c.name AS `c_name!`, f.name AS f_name, f.description AS f_description\n         FROM forums AS f LEFT JOIN categories AS c USING (category_id) WHERE forum_id = ?"
+  },
+  "9efa89c26c1566ead4fcf096359a2e137a98a137fc519058e55700136276c53a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "INSERT INTO sessions(sess_id, expiry, data) VALUES (?, ?, ?) AS new\n             ON DUPLICATE KEY UPDATE expiry = new.expiry, data = new.data"
+  },
+  "a7394ad013446eeeee9232355931a519713b5ef8080424004110419b7a5d8876": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 252,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT topic_id AS id, name, description FROM topics WHERE forum_id = ?"
+  },
+  "be951d71f7355c56c4dffea43a8d0c6c0faefe25287981b1a6ab1702a9996226": {
+    "describe": {
+      "columns": [
+        {
+          "name": "is_admin: bool",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 1,
+            "type": "Tiny"
+          }
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT is_admin AS `is_admin: bool` FROM users WHERE user_id = ?"
+  },
+  "c27682b6cb5252570ea3ed1ec98a54d03a9387efcc444ee4459607e2889b6d84": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "INSERT INTO users(username, credentials, salt) VALUES (?, ?, ?)"
+  },
+  "d964c95706f74cb5097de2b006cda6af5813786e2fd203c03737c3f0905ce538": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 252,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT category_id AS id, name, description FROM categories WHERE '%' + ? + '%'"
+  },
+  "d9693fed6fc6886669a634c3f9e0de9d56c893b4c2f345c7d5a434554a2cb2b3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4101
+            },
+            "max_size": 128,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "profile_tag",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 256,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 4096,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "is_avatar_set: _",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 1,
+            "type": "Tiny"
+          }
+        },
+        {
+          "name": "is_admin: _",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 1,
+            "type": "Tiny"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT user_id, username, profile_tag, description,\n             is_avatar_set AS `is_avatar_set: _`, is_admin AS `is_admin: _`\n             FROM users"
+  },
+  "e3f2bb764964e51993acfb67fd829406bfbce12128b99e457d3914a1f9502548": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT INTO audit_log(user_id, log) VALUES (?, ?)"
+  },
+  "ea05a305728ac2265642b9c89f84872b7c130935f1b843c23d46af9b171c5fff": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "creds: Vec<u8>",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4225
+            },
+            "max_size": 64,
+            "type": "String"
+          }
+        },
+        {
+          "name": "salt: Vec<u8>",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4225
+            },
+            "max_size": 48,
+            "type": "String"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT user_id, credentials AS `creds: Vec<u8>`, salt as `salt: Vec<u8>` FROM users WHERE username = ?"
+  },
+  "f1ecef74710e2d207a4aa0a5b8a00fe440c374312374a2d3097edc57e35ecdf2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "data",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4113
+            },
+            "max_size": 262140,
+            "type": "Blob"
+          }
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT data FROM sessions WHERE sess_id = ? AND (expiry IS NULL OR expiry > NOW())"
+  },
+  "f78924c848573428887cbc59f0fa4f353443eda5e86ba36486aaec7c9a4acd2b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "INSERT INTO threads(name, description, topic_id) VALUES(?, ?, ?)"
+  },
+  "fe325da763aff3dee3b2e8f4ac482e06f0596ac44cb6b9592982af18b2adce87": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 192,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "user_id",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4137
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "username",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4101
+            },
+            "max_size": 128,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "is_avatar_set: bool",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 1,
+            "type": "Tiny"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "SELECT t.thread_id AS id, name, user_id, username, is_avatar_set AS `is_avatar_set: bool`\n         FROM threads AS t INNER JOIN posts USING (thread_id) INNER JOIN users USING (user_id)\n         WHERE topic_id = ? AND post_pos = 1 ORDER BY t.time LIMIT ? OFFSET ?"
+  }
+}
