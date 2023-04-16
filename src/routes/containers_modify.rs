@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sqlx::Row;
+use sqlx::{Executor, Row};
 use tide::{Response, StatusCode};
 use crate::models::BasicContainer;
 use crate::Request;
@@ -354,25 +354,41 @@ pub async fn post_delete(req: Request) -> tide::Result {
             // trigger dont work because mysql cannot update current table
             // procedure dont work because variables must be scalars and i cannot split a query with 2 cols
             let info = sqlx::query!(
-                "SELECT thread_id, post_pos FROM posts WHERE post_id = ?", post_id
+                "SELECT thread_id, post_pos, last_pos FROM posts INNER JOIN threads USING (thread_id)\
+                 WHERE post_id = ?", post_id
             ).fetch_one(&mut tx).await?;
+            tide::log::debug!("DELETE POST: {}, {}", info.thread_id, info.post_pos);
             if info.post_pos == 1 {
                 sqlx::query!("DELETE FROM threads WHERE thread_id = ?", info.thread_id)
                     .execute(&mut tx).await?;
+                sqlx::query!(
+                    "INSERT INTO audit_log(user_id, log) VALUES (?, ?)",
+                    user_id, format!("Deleted thread (ID: {})", info.thread_id)
+                ).execute(&mut tx).await?;
             } else {
+                // i do not like mysql.
+                tx.execute("DROP TRIGGER IF EXISTS post_delete_up_last_pos");
+                sqlx::query!("UPDATE threads SET last_pos = NULL WHERE thread_id = ?", info.thread_id)
+                    .execute(&mut tx).await?;
                 sqlx::query!("DELETE FROM posts WHERE post_id = ?", post_id)
                     .execute(&mut tx).await?;
+                tide::log::debug!("DELETE POST: {:?}",
+                    sqlx::query!("SELECT EXISTS(SELECT * FROM threads WHERE thread_id = ?) `a: bool`",
+                        info.thread_id).fetch_one(&mut tx).await?.a);
                 sqlx::query!(
                     "UPDATE posts SET post_pos = post_pos - 1 WHERE thread_id = ? AND post_pos > ?",
                     info.thread_id, info.post_pos
                 ).execute(&mut tx).await?;
+                sqlx::query!("UPDATE threads SET last_pos = ? - 1 WHERE thread_id = ?", info.last_pos, info.thread_id)
+                    .execute(&mut tx).await?;
+                if !perm_check.poster {
+                    sqlx::query!(
+                        "INSERT INTO audit_log(user_id, log) VALUES (?, ?)",
+                        user_id, format!("Deleted post (Post ID: {}, Thread ID: {})", post_id, info.thread_id)
+                    ).execute(&mut tx).await?;
+                }
             }
-            if !perm_check.poster {
-                sqlx::query!(
-                    "INSERT INTO audit_log(user_id, log) VALUES (?, ?)",
-                    user_id, format!("Deleted post (Post ID: {}, Thread ID: {})", post_id, info.thread_id)
-                ).execute(&mut tx).await?;
-            }
+
             tx.commit().await?;
             Ok(Response::new(StatusCode::ResetContent))
         } else {
