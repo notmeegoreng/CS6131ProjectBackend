@@ -57,7 +57,7 @@ pub async fn user_patch(mut req: Request) -> tide::Result {
 pub async fn log_get(req: Request) -> tide::Result {
     let user_id = req.param("user_id")?.parse::<u32>()?;
     let data = sqlx::query_as!(Log,
-        "SELECT log_id, log, time FROM audit_log WHERE user_id = ?",
+        "SELECT log_id, log, time FROM audit_log WHERE user_id = ? ORDER BY log_id DESC",
         user_id).fetch_all(&req.state().db).await?;
     if data.len() != 0 || sqlx::query!(
         "SELECT is_admin AS `is_admin: bool` FROM users WHERE user_id = ?", user_id

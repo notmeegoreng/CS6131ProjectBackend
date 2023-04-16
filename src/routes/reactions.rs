@@ -1,11 +1,14 @@
 use tide::StatusCode;
 use crate::Request;
 
+
 pub async fn all_reactions(req: Request) -> tide::Result {
-    sqlx::query!(
+    let data = sqlx::query!(
         "SELECT reaction FROM reactions"
-    )
+    ).fetch_all(&req.state().db).await?;
+    Ok(serde_json::to_value(data.iter().map(|r| &r.reaction).collect::<Vec<_>>())?.into())
 }
+
 
 pub async fn add_reaction(mut req: Request) -> tide::Result {
     if let Some(user_id) = req.session().get::<u32>("user_id") {

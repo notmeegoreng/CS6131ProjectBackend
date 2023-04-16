@@ -63,8 +63,8 @@ pub async fn latest_posts(req: Request) -> tide::Result {
         username, profile_tag, is_avatar_set AS `is_avatar_set: bool`, is_admin AS `is_admin: bool`
         FROM ts INNER JOIN posts p USING (thread_id) INNER JOIN posts pf USING (thread_id)
         INNER JOIN users u ON (p.user_id = u.user_id)
-        WHERE pf.post_pos = 1 AND p.post_pos >= IF(last_pos <= 5, 0, last_pos - 5)
-        ORDER BY ts.time, p.post_pos"
+        WHERE pf.post_pos = 1 AND p.post_pos > IF(last_pos <= 5, 0, last_pos - 5)
+        ORDER BY ts.time DESC, p.post_pos"
     ).fetch(&req.state().db);
 
     let mut threads = vec!();
@@ -318,7 +318,7 @@ pub async fn thread_pages(req: Request) -> tide::Result {
             FROM posts INNER JOIN users USING (user_id)
             WHERE thread_id = ? ORDER BY post_pos LIMIT ? OFFSET ?
         )
-        SELECT post_id, user_id, content, username, profile_tag, reaction, r_count,
+        SELECT post_id, user_id, content, username, profile_tag, reaction, r_count `r_count: u32`,
         is_avatar_set `is_avatar_set: bool`, is_admin `is_admin: bool`, reacted `reacted: bool`
         FROM p LEFT JOIN
         (
@@ -349,18 +349,14 @@ pub async fn thread_pages(req: Request) -> tide::Result {
             is_admin: r.is_admin
         });
         if let Some(react) = r.reaction {
-            current.reactions.insert(react, Reaction { count: 1, reacted: r.reacted.unwrap() } );
+            // since `react` exists, `r_count` and `reacted` do too
+            current.reactions.insert(react, Reaction { count: r.r_count.unwrap(), reacted: r.reacted.unwrap() } );
         }
+
         for r in it {
             if current.post_id == r.post_id {
                 if let Some(react) = r.reaction {
-                    match current.reactions.entry(react) {
-                        Entry::Vacant(e) => {
-                            // react is defined so reacted is
-                            e.insert(Reaction { count: 1, reacted: r.reacted.unwrap() });
-                        },
-                        Entry::Occupied(mut e) => { e.get_mut().count += 1; },
-                    }
+                    current.reactions.insert(react,Reaction { count: r.r_count.unwrap(), reacted: r.reacted.unwrap() });
                 }
             } else {
                 posts.push(current);
@@ -371,9 +367,9 @@ pub async fn thread_pages(req: Request) -> tide::Result {
                     reactions: HashMap::new()
                 };
                 if let Some(react) = r.reaction {
-                    // react is defined so reacted is
+                    // `react` is defined so `r_count` and `reacted` are
                     current.reactions.insert(react, Reaction {
-                        count: 1, reacted: r.reacted.unwrap()
+                        count: r.r_count.unwrap(), reacted: r.reacted.unwrap()
                     });
                 }
             }

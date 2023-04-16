@@ -352,12 +352,18 @@ pub async fn post_delete(req: Request) -> tide::Result {
         if perm_check.poster || perm_check.admin {
             let mut tx = req.state().db.begin().await?;
             // trigger dont work because mysql cannot update current table
-            // procedure dont work because variables must be scalars and i cannot split it
+            // procedure dont work because variables must be scalars and i cannot split a query with 2 cols
             let info = sqlx::query!(
                 "SELECT thread_id, post_pos FROM posts WHERE post_id = ?", post_id
             ).fetch_one(&mut tx).await?;
-            sqlx::query!("DELETE FROM posts WHERE post_id = ?", post_id)
-                .execute(&mut tx).await?;
+            if post_pos == 1 {
+                sqlx::query!("DELETE FROM posts WHERE post_id = ?", post_id)
+                    .execute(&mut tx).await?;
+            } else {
+                sqlx::query!("DELETE FROM posts WHERE post_id = ?", post_id)
+                    .execute(&mut tx).await?;
+            }
+            tide::log::debug!("2");
             sqlx::query!(
                 "UPDATE posts SET post_pos = post_pos - 1 WHERE thread_id = ? AND post_pos > ?",
                 info.thread_id, info.post_pos

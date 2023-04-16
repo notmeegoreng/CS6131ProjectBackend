@@ -72,6 +72,8 @@ pub fn add_routes(app: &mut Server<State>, image_file_dir: &str) {
     post_specific.at("/reactions/add").post(reactions::add_reaction);
     post_specific.at("/reactions/rem").post(reactions::rem_reaction);
 
+    api.at("/reactions").get(reactions::all_reactions);
+
     let mut users = api.at("/users");
     users.at("/available").get(users::available_username);
     let mut user_specific = users.at("/:user_id");
