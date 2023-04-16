@@ -82,7 +82,7 @@ impl SessionStore for MysqlSessionStore {
         }
         return match sqlx::query!(
             "INSERT INTO sessions(sess_id, expiry, data) VALUES (?, ?, ?) AS new
-             ON DUPLICATE KEY UPDATE expiry = new.expiry, data = new.data",
+             ON DUPLICATE KEY UPDATE expiry = NEW.expiry, data = NEW.data",
             session.id(), session.expiry(), serde_json::to_string(&session)?
         ).execute(&self.pool).await {
             Ok(_) => Ok(session.into_cookie_value()),

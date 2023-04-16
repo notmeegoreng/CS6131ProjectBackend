@@ -279,13 +279,18 @@ pub async fn thread_info(req: Request) -> tide::Result {
     Ok(StatusCode::NotFound.into())
 }
 
+#[derive(Serialize, Debug)]
+pub struct Reaction {
+    count: u32,
+    reacted: bool
+}
 
-#[derive(Serialize)]
-pub struct Post {
-    pub post_id: u32,
-    pub user_id: u32,
-    pub content: String,
-    reactions: HashMap<String, u32>
+#[derive(Serialize, Debug)]
+struct Post {
+    post_id: u32,
+    user_id: u32,
+    content: String,
+    reactions: HashMap<String, Reaction>
 }
 
 #[derive(Serialize)]
@@ -305,17 +310,24 @@ struct ThreadData {
 
 pub async fn thread_pages(req: Request) -> tide::Result {
     let thread_id = req.param("thread_id")?.parse::<u32>()?;
+    // there is no user with id 0
+    let user_id = req.session().get::<u32>("user_id").unwrap_or(0);
     let vec = sqlx::query!("
         WITH p AS (
-            SELECT post_id, user_id, content, username, profile_tag, is_avatar_set, is_admin
+            SELECT post_pos, post_id, user_id, content, username, profile_tag, is_avatar_set, is_admin
             FROM posts INNER JOIN users USING (user_id)
             WHERE thread_id = ? ORDER BY post_pos LIMIT ? OFFSET ?
         )
         SELECT post_id, user_id, content, username, profile_tag, reaction, r_count,
-        is_avatar_set `is_avatar_set: bool`, is_admin `is_admin: bool`
+        is_avatar_set `is_avatar_set: bool`, is_admin `is_admin: bool`, reacted `reacted: bool`
         FROM p LEFT JOIN
-        (SELECT post_id, reaction, COUNT(*) r_count FROM added_reactions r GROUP BY post_id, reaction) r USING (post_id)",
-        thread_id, PAGE_SIZE, PAGE_SIZE * (req.param("page_num")?.parse::<u16>()? - 1)
+        (
+            SELECT post_id, reaction, time, COUNT(*) r_count, MAX(reactor_id = ?) reacted
+            FROM reactions_user ru INNER JOIN reactions_time rt USING (post_id, reaction)
+            GROUP BY post_id, reaction
+        ) r USING (post_id)
+        ORDER BY post_pos, r.time",
+        thread_id, PAGE_SIZE, PAGE_SIZE * (req.param("page_num")?.parse::<u16>()? - 1), user_id
     ).fetch_all(&req.state().db).await?;
 
     if vec.len() != 0 {
@@ -336,13 +348,18 @@ pub async fn thread_pages(req: Request) -> tide::Result {
             is_avatar_set: r.is_avatar_set,
             is_admin: r.is_admin
         });
-
+        if let Some(react) = r.reaction {
+            current.reactions.insert(react, Reaction { count: 1, reacted: r.reacted.unwrap() } );
+        }
         for r in it {
             if current.post_id == r.post_id {
                 if let Some(react) = r.reaction {
                     match current.reactions.entry(react) {
-                        Entry::Vacant(e) => { e.insert(1); },
-                        Entry::Occupied(mut e) => { *e.get_mut() += 1; },
+                        Entry::Vacant(e) => {
+                            // react is defined so reacted is
+                            e.insert(Reaction { count: 1, reacted: r.reacted.unwrap() });
+                        },
+                        Entry::Occupied(mut e) => { e.get_mut().count += 1; },
                     }
                 }
             } else {
@@ -354,7 +371,10 @@ pub async fn thread_pages(req: Request) -> tide::Result {
                     reactions: HashMap::new()
                 };
                 if let Some(react) = r.reaction {
-                    current.reactions.insert(react, 1);
+                    // react is defined so reacted is
+                    current.reactions.insert(react, Reaction {
+                        count: 1, reacted: r.reacted.unwrap()
+                    });
                 }
             }
             if let Entry::Vacant(e) = users.entry(r.user_id) {
