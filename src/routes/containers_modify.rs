@@ -356,18 +356,17 @@ pub async fn post_delete(req: Request) -> tide::Result {
             let info = sqlx::query!(
                 "SELECT thread_id, post_pos FROM posts WHERE post_id = ?", post_id
             ).fetch_one(&mut tx).await?;
-            if post_pos == 1 {
-                sqlx::query!("DELETE FROM posts WHERE post_id = ?", post_id)
+            if info.post_pos == 1 {
+                sqlx::query!("DELETE FROM threads WHERE thread_id = ?", info.thread_id)
                     .execute(&mut tx).await?;
             } else {
                 sqlx::query!("DELETE FROM posts WHERE post_id = ?", post_id)
                     .execute(&mut tx).await?;
+                sqlx::query!(
+                    "UPDATE posts SET post_pos = post_pos - 1 WHERE thread_id = ? AND post_pos > ?",
+                    info.thread_id, info.post_pos
+                ).execute(&mut tx).await?;
             }
-            tide::log::debug!("2");
-            sqlx::query!(
-                "UPDATE posts SET post_pos = post_pos - 1 WHERE thread_id = ? AND post_pos > ?",
-                info.thread_id, info.post_pos
-            ).execute(&mut tx).await?;
             if !perm_check.poster {
                 sqlx::query!(
                     "INSERT INTO audit_log(user_id, log) VALUES (?, ?)",

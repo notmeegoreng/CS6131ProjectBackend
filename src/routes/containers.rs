@@ -206,9 +206,11 @@ struct TopicData {
 pub async fn topic_pages(req: Request) -> tide::Result {
     let topic_id = req.param("topic_id")?.parse::<u32>()?;
     let vec = sqlx::query!(
-        "SELECT t.thread_id AS id, name, user_id, username, content, is_avatar_set AS `is_avatar_set: bool`
-         FROM threads AS t INNER JOIN posts USING (thread_id) INNER JOIN users USING (user_id)
-         WHERE topic_id = ? AND post_pos = 1 ORDER BY t.time LIMIT ? OFFSET ?",
+        "SELECT t.thread_id AS id, name, u.user_id, username, p.content, is_avatar_set AS `is_avatar_set: bool`
+         FROM threads t INNER JOIN posts p USING (thread_id) INNER JOIN posts pl USING (thread_id)
+         INNER JOIN users u ON (u.user_id = p.user_id)
+         WHERE topic_id = ? AND p.post_pos = 1 AND pl.post_pos = last_pos
+         ORDER BY pl.time DESC LIMIT ? OFFSET ?",
         topic_id, PAGE_SIZE, PAGE_SIZE * (req.param("page_num")?.parse::<u16>()? - 1)
     ).fetch_all(&req.state().db).await?;
 
